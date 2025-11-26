@@ -8,6 +8,10 @@ let isKioskMode = false;
 // Path to store the logo persistently
 const userDataPath = app.getPath('userData');
 const logoStoragePath = path.join(userDataPath, 'stored-logo');
+const recentLogosPath = path.join(userDataPath, 'recent-logos');
+const settingsPath = path.join(userDataPath, 'settings');
+
+const MAX_RECENT_LOGOS = 10;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -63,6 +67,21 @@ function registerShortcuts() {
   globalShortcut.register('CommandOrControl+O', () => {
     openFileDialog();
   });
+
+  // Ctrl+B - Toggle background color
+  globalShortcut.register('CommandOrControl+B', () => {
+    toggleBackgroundColor();
+  });
+}
+
+function toggleBackgroundColor() {
+  const settings = loadSettings();
+  const newColor = settings.backgroundColor === 'black' ? 'white' : 'black';
+  settings.backgroundColor = newColor;
+  saveSettings(settings);
+  if (mainWindow) {
+    mainWindow.webContents.send('background-color-changed', newColor);
+  }
 }
 
 function toggleKioskMode() {
@@ -75,9 +94,10 @@ function toggleKioskMode() {
 
 function enterKioskMode() {
   if (mainWindow) {
+    // Send kiosk status first to hide controls immediately
+    mainWindow.webContents.send('kiosk-status', true);
     mainWindow.setKiosk(true);
     isKioskMode = true;
-    mainWindow.webContents.send('kiosk-status', true);
   }
 }
 
@@ -129,10 +149,67 @@ function loadAndStoreLogo(filePath) {
     const logoData = { dataUrl, originalPath: filePath };
     fs.writeFileSync(logoStoragePath, JSON.stringify(logoData), 'utf8');
     
+    // Add to recent logos
+    addToRecentLogos(filePath, path.basename(filePath));
+    
     // Send to renderer
     mainWindow.webContents.send('logo-loaded', dataUrl);
   } catch (error) {
     console.error('Error loading logo:', error);
+  }
+}
+
+function addToRecentLogos(filePath, fileName) {
+  try {
+    let recentLogos = [];
+    if (fs.existsSync(recentLogosPath)) {
+      recentLogos = JSON.parse(fs.readFileSync(recentLogosPath, 'utf8'));
+    }
+    
+    // Remove duplicate if exists
+    recentLogos = recentLogos.filter(logo => logo.path !== filePath);
+    
+    // Add new logo at the beginning
+    recentLogos.unshift({ path: filePath, name: fileName, timestamp: Date.now() });
+    
+    // Keep only MAX_RECENT_LOGOS
+    recentLogos = recentLogos.slice(0, MAX_RECENT_LOGOS);
+    
+    fs.writeFileSync(recentLogosPath, JSON.stringify(recentLogos), 'utf8');
+  } catch (error) {
+    console.error('Error saving recent logos:', error);
+  }
+}
+
+function getRecentLogos() {
+  try {
+    if (fs.existsSync(recentLogosPath)) {
+      const recentLogos = JSON.parse(fs.readFileSync(recentLogosPath, 'utf8'));
+      // Filter out logos that no longer exist on disk
+      return recentLogos.filter(logo => fs.existsSync(logo.path));
+    }
+  } catch (error) {
+    console.error('Error reading recent logos:', error);
+  }
+  return [];
+}
+
+function loadSettings() {
+  try {
+    if (fs.existsSync(settingsPath)) {
+      return JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    }
+  } catch (error) {
+    console.error('Error reading settings:', error);
+  }
+  return { backgroundColor: 'black' };
+}
+
+function saveSettings(settings) {
+  try {
+    fs.writeFileSync(settingsPath, JSON.stringify(settings), 'utf8');
+  } catch (error) {
+    console.error('Error saving settings:', error);
   }
 }
 
@@ -142,6 +219,9 @@ function loadStoredLogo() {
       const logoData = JSON.parse(fs.readFileSync(logoStoragePath, 'utf8'));
       mainWindow.webContents.send('logo-loaded', logoData.dataUrl);
     }
+    // Also send initial settings
+    const settings = loadSettings();
+    mainWindow.webContents.send('settings-loaded', settings);
   } catch (error) {
     console.error('Error loading stored logo:', error);
   }
@@ -169,6 +249,29 @@ ipcMain.handle('clear-logo', () => {
   } catch (error) {
     console.error('Error clearing logo:', error);
   }
+});
+
+ipcMain.handle('get-recent-logos', () => {
+  return getRecentLogos();
+});
+
+ipcMain.handle('open-recent-logo', (event, filePath) => {
+  if (fs.existsSync(filePath)) {
+    loadAndStoreLogo(filePath);
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('get-settings', () => {
+  return loadSettings();
+});
+
+ipcMain.handle('set-background-color', (event, color) => {
+  const settings = loadSettings();
+  settings.backgroundColor = color;
+  saveSettings(settings);
+  mainWindow.webContents.send('background-color-changed', color);
 });
 
 // App lifecycle
