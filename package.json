@@ -1,0 +1,22 @@
+{
+  "name": "logoscreen",
+  "version": "1.0.0",
+  "description": "Offline Electron app for Raspberry Pi that displays a logo centered on screen with kiosk mode support",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "electron",
+    "kiosk",
+    "raspberry-pi",
+    "logo",
+    "display"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^39.2.3"
+  }
+}
