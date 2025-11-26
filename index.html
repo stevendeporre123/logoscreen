@@ -18,6 +18,15 @@
       overflow: hidden;
       background-color: #000000;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      transition: background-color 0.3s ease;
+    }
+
+    body.bg-white {
+      background-color: #ffffff;
+    }
+
+    body.bg-black {
+      background-color: #000000;
     }
 
     .container {
@@ -105,6 +114,10 @@
       opacity: 1;
     }
 
+    .controls.kiosk-hidden {
+      display: none !important;
+    }
+
     .btn {
       padding: 10px 20px;
       font-size: 14px;
@@ -159,6 +172,10 @@
       opacity: 1;
     }
 
+    .status-bar.kiosk-hidden {
+      display: none !important;
+    }
+
     .kiosk-indicator {
       display: inline-block;
       width: 8px;
@@ -190,6 +207,10 @@
       opacity: 1;
     }
 
+    .shortcuts-help.kiosk-hidden {
+      display: none !important;
+    }
+
     .shortcuts-help kbd {
       display: inline-block;
       padding: 2px 6px;
@@ -197,6 +218,80 @@
       border-radius: 3px;
       margin-right: 5px;
       font-family: monospace;
+    }
+
+    .recent-logos-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .recent-logos-dropdown {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #222;
+      border-radius: 6px;
+      padding: 8px 0;
+      margin-bottom: 8px;
+      min-width: 200px;
+      max-height: 300px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .recent-logos-dropdown.visible {
+      display: block;
+    }
+
+    .recent-logo-item {
+      padding: 8px 16px;
+      cursor: pointer;
+      color: #fff;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .recent-logo-item:hover {
+      background-color: #333;
+    }
+
+    .recent-logo-empty {
+      padding: 8px 16px;
+      color: #666;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .bg-toggle-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #666;
+      margin-left: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .bg-toggle-btn.bg-white-btn {
+      background-color: #ffffff;
+    }
+
+    .bg-toggle-btn.bg-black-btn {
+      background-color: #000000;
+    }
+
+    .bg-toggle-btn:hover {
+      border-color: #999;
+      transform: scale(1.1);
+    }
+
+    .bg-toggle-btn.active {
+      border-color: #0066cc;
+      box-shadow: 0 0 4px #0066cc;
     }
   </style>
 </head>
@@ -222,12 +317,21 @@
       <div><kbd>Esc</kbd> Exit Kiosk Mode</div>
       <div><kbd>Ctrl+O</kbd> Upload Logo</div>
       <div><kbd>Ctrl+Shift+K</kbd> Toggle Kiosk</div>
+      <div><kbd>Ctrl+B</kbd> Toggle Background</div>
     </div>
 
     <div class="controls" id="controls">
       <button class="btn btn-primary" id="uploadBtn">📁 Upload Logo</button>
+      <div class="recent-logos-container">
+        <button class="btn" id="recentBtn">📂 Recent</button>
+        <div class="recent-logos-dropdown" id="recentDropdown">
+          <div class="recent-logo-empty" id="noRecentLogos">No recent logos</div>
+        </div>
+      </div>
       <button class="btn" id="kioskBtn">🖥️ Enter Kiosk Mode</button>
       <button class="btn btn-danger" id="clearBtn">🗑️ Clear Logo</button>
+      <button class="bg-toggle-btn bg-black-btn active" id="bgBlackBtn" title="Black background"></button>
+      <button class="bg-toggle-btn bg-white-btn" id="bgWhiteBtn" title="White background"></button>
     </div>
   </div>
 

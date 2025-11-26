@@ -9,6 +9,8 @@ An offline Electron app for Raspberry Pi that displays a logo centered on screen
 - **Centered Display**: Logo is automatically centered horizontally and vertically
 - **Kiosk Mode**: Full-screen kiosk mode with keyboard toggle
 - **Persistent Storage**: Logo is saved locally and restored on app restart
+- **Recent Logos**: Quick access to recently opened logos
+- **Background Color**: Toggle between black and white background
 - **Raspberry Pi Optimized**: Designed for small portable monitors
 
 ## Installation
@@ -48,13 +50,16 @@ npm start
 | `Escape` | Exit kiosk mode |
 | `Ctrl+Shift+K` | Toggle kiosk mode (alternative) |
 | `Ctrl+O` | Open file dialog to upload logo |
+| `Ctrl+B` | Toggle background color (black/white) |
 
 ### Controls
 
 When hovering over the window, you'll see:
 - **Upload Logo**: Select a new logo image
+- **Recent**: Opens a dropdown with recently used logos
 - **Enter/Exit Kiosk Mode**: Toggle fullscreen kiosk mode
 - **Clear Logo**: Remove the current logo
+- **Background Color Buttons**: Black/white circle buttons to change background
 
 ## Raspberry Pi Setup
 
