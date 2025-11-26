@@ -7,7 +7,6 @@ const clearBtn = document.getElementById('clearBtn');
 const kioskIndicator = document.getElementById('kioskIndicator');
 const kioskStatus = document.getElementById('kioskStatus');
 const controls = document.getElementById('controls');
-const dropZone = document.getElementById('dropZone');
 
 let hasLogo = false;
 let isKiosk = false;
@@ -79,30 +78,15 @@ function updateControlsVisibility() {
   }
 }
 
-// Drag and drop support (for local files when not in strict kiosk)
+// Prevent default drag and drop behavior (files can't be dropped due to security)
 document.addEventListener('dragover', (e) => {
   e.preventDefault();
   e.stopPropagation();
-  dropZone.classList.add('active');
-});
-
-document.addEventListener('dragleave', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (e.target === dropZone || e.target === document.body) {
-    dropZone.classList.remove('active');
-  }
 });
 
 document.addEventListener('drop', (e) => {
   e.preventDefault();
   e.stopPropagation();
-  dropZone.classList.remove('active');
-  
-  // Note: Due to Electron's security model, we can't directly access 
-  // dropped files without nodeIntegration. Instead, show a message.
-  // The user should use Ctrl+O or the Upload button.
-  console.log('File drop detected. Please use Ctrl+O or Upload button to select files.');
 });
 
 // Prevent context menu in kiosk mode

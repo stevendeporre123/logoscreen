@@ -76,7 +76,6 @@ function toggleKioskMode() {
 function enterKioskMode() {
   if (mainWindow) {
     mainWindow.setKiosk(true);
-    mainWindow.setFullScreen(true);
     isKioskMode = true;
     mainWindow.webContents.send('kiosk-status', true);
   }
@@ -85,7 +84,6 @@ function enterKioskMode() {
 function exitKioskMode() {
   if (mainWindow) {
     mainWindow.setKiosk(false);
-    mainWindow.setFullScreen(false);
     isKioskMode = false;
     mainWindow.webContents.send('kiosk-status', false);
   }
