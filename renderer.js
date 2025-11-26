@@ -10,8 +10,8 @@ const clearBtn = document.getElementById('clearBtn');
 const kioskIndicator = document.getElementById('kioskIndicator');
 const kioskStatus = document.getElementById('kioskStatus');
 const controls = document.getElementById('controls');
-const statusBar = document.querySelector('.status-bar');
-const shortcutsHelp = document.querySelector('.shortcuts-help');
+const statusBar = document.getElementById('statusBar');
+const shortcutsHelp = document.getElementById('shortcutsHelp');
 const bgBlackBtn = document.getElementById('bgBlackBtn');
 const bgWhiteBtn = document.getElementById('bgWhiteBtn');
 
