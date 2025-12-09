@@ -42,15 +42,16 @@ npm start
 2. Select an image file (PNG, JPG, GIF, BMP, or WebP)
 3. The logo will be displayed centered on screen
 
-### Keyboard Shortcuts
+### Keyboard & Mouse Controls
 
-| Shortcut | Action |
+| Control | Action |
 |----------|--------|
 | `F11` | Toggle kiosk/fullscreen mode |
 | `Escape` | Exit kiosk mode |
 | `Ctrl+Shift+K` | Toggle kiosk mode (alternative) |
 | `Ctrl+O` | Open file dialog to upload logo |
 | `Ctrl+B` | Toggle background color (black/white) |
+| Double-click/tap anywhere | Exit kiosk mode quickly |
 
 ### Controls
 
@@ -88,6 +89,16 @@ X-GNOME-Autostart-enabled=true
 cd /path/to/logoscreen
 npm start -- --kiosk
 ```
+
+### Production build and desktop shortcut (Pi)
+
+To package the app for Raspberry Pi and drop a desktop launcher automatically, run:
+
+```bash
+./build_for_pi.sh
+```
+
+The script installs dependencies, packages the app for the current Pi architecture, and writes a `Logoscreen.desktop` launcher to your Desktop (honoring XDG desktop paths).
 
 ### Disable Screen Blanking
 

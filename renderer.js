@@ -62,6 +62,45 @@ bgWhiteBtn.addEventListener('click', () => {
   setBackgroundColor('white');
 });
 
+// Fallback keyboard shortcuts for environments where global shortcuts are
+// unavailable (e.g., Raspberry Pi builds without a global X server keyboard
+// hook). These mirror the main-process shortcuts so users have a consistent
+// experience.
+document.addEventListener('keydown', (event) => {
+  const isCtrlOrCmd = event.ctrlKey || event.metaKey;
+  const isShift = event.shiftKey;
+
+  if (event.code === 'F11') {
+    event.preventDefault();
+    window.electronAPI.toggleKiosk();
+    return;
+  }
+
+  if (event.code === 'Escape' && isKiosk) {
+    event.preventDefault();
+    window.electronAPI.exitKiosk();
+    return;
+  }
+
+  if (isCtrlOrCmd && isShift && (event.code === 'KeyK')) {
+    event.preventDefault();
+    window.electronAPI.toggleKiosk();
+    return;
+  }
+
+  if (isCtrlOrCmd && event.code === 'KeyO') {
+    event.preventDefault();
+    window.electronAPI.openFileDialog();
+    return;
+  }
+
+  if (isCtrlOrCmd && event.code === 'KeyB') {
+    event.preventDefault();
+    const nextColor = currentBgColor === 'black' ? 'white' : 'black';
+    setBackgroundColor(nextColor);
+  }
+});
+
 // Listen for logo loaded from main process
 window.electronAPI.onLogoLoaded((dataUrl) => {
   logoImage.src = dataUrl;
