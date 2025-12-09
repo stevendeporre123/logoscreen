@@ -44,6 +44,24 @@ function createWindow() {
     mainWindow = null;
   });
 
+  // Keep kiosk state in sync with the actual window state across platforms
+  mainWindow.on('kiosk-changed', (_, flag) => {
+    isKioskMode = flag;
+    mainWindow.webContents.send('kiosk-status', flag);
+  });
+
+  // Some platforms (including certain Raspberry Pi builds) rely on fullscreen
+  // events instead of kiosk-changed; keep listening to stay consistent.
+  mainWindow.on('enter-full-screen', () => {
+    isKioskMode = true;
+    mainWindow.webContents.send('kiosk-status', true);
+  });
+
+  mainWindow.on('leave-full-screen', () => {
+    isKioskMode = false;
+    mainWindow.webContents.send('kiosk-status', false);
+  });
+
   // Register keyboard shortcuts
   registerShortcuts();
 }
@@ -100,15 +118,12 @@ function enterKioskMode() {
     // Send kiosk status first to hide controls immediately
     mainWindow.webContents.send('kiosk-status', true);
     mainWindow.setKiosk(true);
-    isKioskMode = true;
   }
 }
 
 function exitKioskMode() {
   if (mainWindow) {
     mainWindow.setKiosk(false);
-    isKioskMode = false;
-    mainWindow.webContents.send('kiosk-status', false);
   }
 }
 
