@@ -25,6 +25,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Set background color
   setBackgroundColor: (color) => ipcRenderer.invoke('set-background-color', color),
+
+  // Show context menu
+  showContextMenu: () => ipcRenderer.invoke('show-context-menu'),
+
+  // Exit kiosk mode explicitly
+  exitKiosk: () => ipcRenderer.invoke('exit-kiosk'),
   
   // Listen for logo loaded event
   onLogoLoaded: (callback) => {
