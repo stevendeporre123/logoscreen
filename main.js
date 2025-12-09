@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, globalShortcut, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -10,10 +10,13 @@ const userDataPath = app.getPath('userData');
 const logoStoragePath = path.join(userDataPath, 'stored-logo');
 const recentLogosPath = path.join(userDataPath, 'recent-logos');
 const settingsPath = path.join(userDataPath, 'settings');
+const logosFolderPath = path.join(userDataPath, 'logos');
 
 const MAX_RECENT_LOGOS = 10;
 
 function createWindow() {
+  ensureDirectory(logosFolderPath);
+
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 600,
@@ -120,8 +123,46 @@ async function openFileDialog() {
 
   if (!result.canceled && result.filePaths.length > 0) {
     const filePath = result.filePaths[0];
-    loadAndStoreLogo(filePath);
+    const destinationPath = await getDestinationPath(filePath);
+
+    if (!destinationPath) {
+      return;
+    }
+
+    copyLogoFile(filePath, destinationPath);
+    loadAndStoreLogo(destinationPath);
   }
+}
+
+function ensureDirectory(directoryPath) {
+  if (!fs.existsSync(directoryPath)) {
+    fs.mkdirSync(directoryPath, { recursive: true });
+  }
+}
+
+async function getDestinationPath(originalPath) {
+  ensureDirectory(logosFolderPath);
+  const defaultName = path.basename(originalPath);
+  const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
+    title: 'Save logo to local library',
+    buttonLabel: 'Save Logo',
+    defaultPath: path.join(logosFolderPath, defaultName),
+    filters: [
+      { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'] }
+    ]
+  });
+
+  if (canceled) {
+    return null;
+  }
+
+  const chosenName = filePath ? path.basename(filePath) : defaultName;
+  return path.join(logosFolderPath, chosenName);
+}
+
+function copyLogoFile(sourcePath, destinationPath) {
+  ensureDirectory(path.dirname(destinationPath));
+  fs.copyFileSync(sourcePath, destinationPath);
 }
 
 function loadAndStoreLogo(filePath) {
@@ -273,6 +314,72 @@ ipcMain.handle('set-background-color', (event, color) => {
   saveSettings(settings);
   mainWindow.webContents.send('background-color-changed', color);
 });
+
+ipcMain.handle('show-context-menu', () => {
+  showContextMenu();
+});
+
+ipcMain.handle('exit-kiosk', () => {
+  if (isKioskMode) {
+    exitKioskMode();
+  }
+});
+
+function showContextMenu() {
+  const settings = loadSettings();
+  const template = [
+    {
+      label: 'Upload logo…',
+      click: () => openFileDialog()
+    },
+    {
+      label: isKioskMode ? 'Exit kiosk mode' : 'Enter kiosk mode',
+      click: () => toggleKioskMode()
+    },
+    {
+      label: 'Toggle background',
+      submenu: [
+        {
+          label: 'Black',
+          type: 'radio',
+          checked: settings.backgroundColor === 'black',
+          click: () => {
+            settings.backgroundColor = 'black';
+            saveSettings(settings);
+            mainWindow.webContents.send('background-color-changed', 'black');
+          }
+        },
+        {
+          label: 'White',
+          type: 'radio',
+          checked: settings.backgroundColor === 'white',
+          click: () => {
+            settings.backgroundColor = 'white';
+            saveSettings(settings);
+            mainWindow.webContents.send('background-color-changed', 'white');
+          }
+        }
+      ]
+    },
+    {
+      label: 'Clear logo',
+      click: () => {
+        if (fs.existsSync(logoStoragePath)) {
+          fs.unlinkSync(logoStoragePath);
+        }
+        mainWindow.webContents.send('logo-cleared');
+      }
+    },
+    { type: 'separator' },
+    {
+      label: 'Quit',
+      click: () => app.quit()
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  menu.popup({ window: mainWindow });
+}
 
 // App lifecycle
 app.whenReady().then(createWindow);

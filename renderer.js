@@ -14,6 +14,7 @@ const statusBar = document.getElementById('statusBar');
 const shortcutsHelp = document.getElementById('shortcutsHelp');
 const bgBlackBtn = document.getElementById('bgBlackBtn');
 const bgWhiteBtn = document.getElementById('bgWhiteBtn');
+const container = document.querySelector('.container');
 
 let hasLogo = false;
 let isKiosk = false;
@@ -186,10 +187,16 @@ document.addEventListener('drop', (e) => {
   e.stopPropagation();
 });
 
-// Prevent context menu in kiosk mode
+// Replace default context menu with app actions
 document.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  window.electronAPI.showContextMenu();
+});
+
+// Allow exiting kiosk mode with a double click/tap
+container.addEventListener('dblclick', () => {
   if (isKiosk) {
-    e.preventDefault();
+    window.electronAPI.exitKiosk();
   }
 });
 
